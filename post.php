@@ -1,10 +1,10 @@
 <?php
 
-if (isset($_REQUEST['first_name'])) {
-    echo 'Came from index: '. $_REQUEST['first_name'] .'';
-} else {
+// if (isset($_REQUEST['first_name'])) {
+//     echo 'Came from index: '. $_REQUEST['first_name'] .'';
+// } else {
     echo 'not authorized!';
-}
+// }
 
 
 // sleep(5);

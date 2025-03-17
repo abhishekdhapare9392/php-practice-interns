@@ -122,8 +122,61 @@
 //     exit;
 // }
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $servername = "127.0.0.1";
+    $username = "root";
+    $password = "";
+    $dbname = "php-test";
+    try {
+        // $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        // $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        // echo "Connect Successfully";
+        // $sql = "SELECT id, first_name, last_name, email FROM users";
+        // $stmt = $conn->prepare($sql);
+        // $stmt->execute();
+
+        // $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        // // print_r($result);
+        // foreach(new TableRows(new RecursiveArrayIterator($stmt->fetchAll())) as $k=>$v) {
+        //     echo $v;
+        //   }
+        // exit;
+
+        $first_name = $_POST['first_name'];
+        $last_name = $_POST['last_name'];
+        $email = $_POST['email'];
+
+        $conn = mysqli_connect($servername, $username, $password, $dbname);
+        if (!$conn) {
+            die("connection failed");
+        }
+        $sql = "INSERT INTO users (first_name, last_name, email) VALUES ('$first_name', '$last_name', '$email')";
+        if(mysqli_query($conn, $sql)){
+            echo "New User added successfully";
+        } else {
+            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+        }
+
+        // $sql = "SELECT * FROM users";
+        // $result = mysqli_query($sql);
+        
+        // if (mysqli_num_rows($result) > 0) {
+        //     // output data of each row
+        //     while($row = mysqli_fetch_assoc($result)) {
+        //       echo "id: " . $row["id"]. " <br> Name: " . $row["first_name"]. " " . $row["last_name"]. "<br>" . " Email: " . $row["email"];
+        //     }
+        //   } else {
+        //     echo "0 results";
+        //   }
+          
+          mysqli_close($conn);
+
+
+    } catch(PDOException $e) {
+        echo "Connection Failed: ", $e->getMessage();
+        exit;
+    }
     if (isset($_REQUEST['first_name'])) {
-        echo "<br>Request<br>";
+        // echo "<br>Request<br>";
         if (!preg_match("/^[a-zA-z-' ]*$/", $_REQUEST["first_name"])) {
             echo "<span style='color:red'>Error: Enter a valid name!</span>";
         } else {
@@ -144,14 +197,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />-->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
-<div>
-    <form action="<?php $_SERVER['PHP_SELF'] ?>" method="POST">
-        <label for="first_name">First Name</label>
-        <input type="text" id="first_name" name="first_name" placeholder="First Name" required>
-
-        <button type="submit">Save</button>
-    </form>
+<div class="container">
+    <a href="post.php">Create Post!</a>
+    <div class="flex flex-col gap-3">
+        <form action="<?php $_SERVER['PHP_SELF'] ?>" method="POST">
+            <label for="first_name">First Name</label><br>
+            <input class="border border-gray-400 p-1" type="text" id="first_name" name="first_name"
+                placeholder="First Name" required>
+            <br>
+            <label for="last_name">Last Name</label><br>
+            <input class="border border-gray-400 p-1" type="text" id="last_name" name="last_name"
+                placeholder="Last Name">
+            <br>
+            <label for="email">Email</label><br>
+            <input class="border border-gray-400 p-1" type="email" id="email" name="email" placeholder="Email">
+            <br>
+            <br>
+            <button type="submit" class="bg-blue-500 text-white p-2">Save</button>
+        </form>
+    </div>
 </div>
 
 <body>
