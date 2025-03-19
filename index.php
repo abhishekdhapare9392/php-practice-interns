@@ -44,6 +44,10 @@
     #successMessage {
         display: none;
     }
+
+    .login-card {
+        display: none;
+    }
     </style>
 </head>
 
@@ -55,6 +59,34 @@
         </div>
         <span id="successMessage" class="text-danger message"></span>
         <div class="table-container">
+            <div class="d-flex justify-content-end my-3">
+                <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+            </div>
+            <div class="my-3">
+                <div class="login-card">
+                    <h2 class="mb-4">User Login</h2>
+
+                    <form>
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input class="form-control" type="text" id="first_name" name="first_name"
+                                placeholder="First Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input class="form-control" type="text" id="last_name" name="last_name"
+                                placeholder="Last Name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input class="form-control" type="email" id="email" name="email" placeholder="Email"
+                                required>
+                        </div>
+                        <button type="button" class="btn btn-warning" onclick="cancelLoginForm()">cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveUser()">Save</button>
+                    </form>
+                </div>
+            </div>
             <table class="table table-striped table-bordered text-center">
                 <thead class="table-dark">
                     <tr>
@@ -64,67 +96,13 @@
                         <th>Edit Info</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php
-                $servername = "127.0.0.1";
-                $username = "root";
-                $password = "";
-                $dbname = "php-test";
+                <tbody id="users-table-body">
 
-                $conn = new mysqli($servername, $username, $password, $dbname);
-                if ($conn->connect_error) {
-                    die("Connection failed: " . $conn->connect_error);
-                }
-
-                if (isset($_POST['id'])) {
-                    // print_r($_POST);
-                    $id = $_POST['id'];
-                    $sql = "DELETE FROM users WHERE id = $id";
-                    $result = $conn->query($sql);
-
-                    if ($result) {
-                        echo "<script>document.getElementById('successMessage').style.display = 'block';
-                        document.getElementById('successMessage').innerHTML = 'User deleted successfully';
-                        setTimeout(() => {document.getElementById('successMessage').style.display = 'none';}, 5000);</script>";
-                    }
-                    
-                }
-
-                $sql = "SELECT id, first_name, last_name, email FROM users";
-                $result = $conn->query($sql);
-
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>
-                                <td>" . htmlspecialchars($row['first_name']) . "</td>
-                                <td>" . htmlspecialchars($row['last_name']) . "</td>
-                                <td>" . htmlspecialchars($row['email']) . "</td>
-                                <td>
-                                    <a href='/edit.php?id=" . $row['id'] . "' class='edit-btn'>
-                                        <i class='fa-solid fa-pen'></i>
-                                    </a>
-                                <form action='" . $_SERVER['PHP_SELF'] . "' method='POST'>
-                                    <input type='hidden' name='id' value='" . $row['id'] . "'>
-                                    <button type='submit'  class='btn'>
-                                        <i class='fa-solid fa-trash'></i>
-                                    </button>
-                                </form>
-                                </td>
-                              </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='4' class='text-center'>No users found</td></tr>";
-                }
-
-                $conn->close();
-                ?>
                 </tbody>
             </table>
         </div>
 
-        <div class="fs-4 text-center">
-            <a href="/add.php" class="btn btn-primary">Add User</a>
-        </div>
+
     </div>
 
     <!-- <script>
@@ -139,6 +117,75 @@
         });
     });
     </script> -->
+
+    <script>
+    function getUsers() {
+        fetch('/get.php')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                let tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    let tr = `
+                    <tr>
+                        <td>${item.first_name}</td>
+                        <td>${item.last_name}</td>
+                        <td>${item.email}</td>
+                        <td>
+                            <a href="edit.php?id=${item.id}" class="edit-btn" data-id="${item.id}"><i class="fa fa-pen"></i></a>
+                            <a href="delete.php?id=${item.id}" class="delete-btn" data-id="${item.id}"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    `;
+                    tbody.innerHTML += tr;
+                })
+            })
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        // console.log("working");
+        getUsers();
+    })
+
+
+
+    function addUser() {
+        document.querySelector('.login-card').style.display = 'block';
+    }
+
+    function cancelLoginForm() {
+        document.querySelector('.login-card').style.display = 'none';
+    }
+
+    function saveUser() {
+        let firstName = document.getElementById('first_name').value;
+        let lastName = document.getElementById('last_name').value;
+        let email = document.getElementById('email').value;
+        let data = new FormData();
+        data.append('first_name', firstName);
+        data.append('last_name', lastName);
+        data.append('email', email);
+        fetch('/add.php', {
+                method: 'POST',
+                body: data,
+            }).then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                document.getElementById('first_name').value = '';
+                document.getElementById('last_name').value = '';
+                document.getElementById('email').value = '';
+                document.querySelector('.login-card').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('successMessage').innerHTML = 'User added successfully';
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+                getUsers();
+            }).catch(error => {
+                console.error(error);
+            });
+    }
+    </script>
 
 </body>
 
